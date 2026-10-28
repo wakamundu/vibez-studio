@@ -1101,5 +1101,112 @@ async function startMicTest() {
     "Pitch, reverb, echo, EQ and volume controls are UI controls only in this starter version. True pitch correction and processed export need an audio-processing engine.";
 })();
 </script>
-</body>
+
+<section id="vibez-fx" style="background:#101020;color:white;padding:18px;border-radius:14px;margin:20px 0;font-family:Arial">
+  <h2>🎛️ Vocal FX Plugin</h2>
+  <p>Live microphone effects preview</p>
+
+  <button id="fxStart">Start FX</button>
+  <button id="fxStop" disabled>Stop FX</button>
+  <p id="fxStatus">Ready</p>
+
+  <label>Echo
+    <input id="fxEcho" type="range" min="0" max="0.7" step="0.05" value="0.2">
+  </label><br><br>
+
+  <label>Reverb
+    <input id="fxReverb" type="range" min="0" max="1" step="0.1" value="0.3">
+  </label><br><br>
+
+  <label>Voice tone (filter)
+    <input id="fxTone" type="range" min="200" max="5000" step="100" value="1200">
+  </label><br><br>
+
+  <label>Output volume
+    <input id="fxVolume" type="range" min="0" max="1" step="0.05" value="0.5">
+  </label>
+
+  <p style="color:#ffd780">
+    Use headphones for live monitoring to prevent feedback.
+    This plugin does not yet provide true Auto-Tune.
+  </p>
+</section>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  let ctx, stream, source, filter, delay, feedback, wet, dry, output;
+
+  function connectEffects() {
+    filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = +$("fxTone").value;
+
+    delay = ctx.createDelay(1);
+    delay.delayTime.value = 0.22;
+
+    feedback = ctx.createGain();
+    wet = ctx.createGain();
+    dry = ctx.createGain();
+    output = ctx.createGain();
+
+    source.connect(filter);
+    filter.connect(dry);
+    dry.connect(output);
+
+    filter.connect(delay);
+    delay.connect(wet);
+    wet.connect(output);
+    delay.connect(feedback);
+    feedback.connect(delay);
+
+    output.connect(ctx.destination);
+    update();
+  }
+
+  function update() {
+    if (!ctx || !output) return;
+    feedback.gain.value = +$("fxEcho").value;
+    wet.gain.value = +$("fxReverb").value * 0.5;
+    filter.frequency.value = +$("fxTone").value;
+    output.gain.value = +$("fxVolume").value;
+    dry.gain.value = 0.8;
+  }
+
+  ["fxEcho", "fxReverb", "fxTone", "fxVolume"].forEach(id => {
+    $(id).addEventListener("input", update);
+  });
+
+  $("fxStart").addEventListener("click", async () => {
+    try {
+      $("fxStart").disabled = true;
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      await ctx.resume();
+      stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      source = ctx.createMediaStreamSource(stream);
+      connectEffects();
+      $("fxStop").disabled = false;
+      $("fxStatus").textContent =
+        "FX active. Connect headphones, then speak or sing.";
+    } catch (e) {
+      stream?.getTracks().forEach(t => t.stop());
+      if (ctx) await ctx.close();
+      ctx = null;
+      $("fxStart").disabled = false;
+      $("fxStatus").textContent = "Could not start: " + e.message;
+    }
+  });
+
+  $("fxStop").addEventListener("click", async () => {
+    stream?.getTracks().forEach(t => t.stop());
+    if (ctx) await ctx.close();
+    ctx = stream = source = filter = delay =
+      feedback = wet = dry = output = null;
+    $("fxStart").disabled = false;
+    $("fxStop").disabled = true;
+    $("fxStatus").textContent = "FX stopped";
+  });
+})();
+</script>
+/body>
 </html>
