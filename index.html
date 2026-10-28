@@ -1208,5 +1208,199 @@ async function startMicTest() {
   });
 })();
 </script>
-/body>
+
+<!-- WakaûndūVibez Studio Audio Processing Engine -->
+<section id="audio-engine" style="background:#12121e;color:white;padding:20px;border-radius:14px;margin:20px 0;font-family:Arial,sans-serif">
+  <h2>🎚️ Audio Processing Engine</h2>
+  <p>Load a vocal recording and shape your sound in real time.</p>
+
+  <label for="engine-file">Choose vocal recording</label>
+  <input id="engine-file" type="file" accept="audio/*"
+    style="display:block;margin:12px 0;color:white;max-width:100%">
+
+  <audio id="engine-audio" controls style="width:100%;margin:10px 0"></audio>
+
+  <label for="engine-eq">EQ / Tone</label>
+  <input id="engine-eq" type="range" min="-12" max="12" value="0" step="1" style="width:100%">
+  <p>EQ: <span id="engine-eq-value">0</span> dB</p>
+
+  <label for="engine-comp">Compression</label>
+  <input id="engine-comp" type="range" min="0" max="100" value="40" style="width:100%">
+  <p>Compression: <span id="engine-comp-value">40</span>%</p>
+
+  <label for="engine-reverb">Reverb</label>
+  <input id="engine-reverb" type="range" min="0" max="100" value="20" style="width:100%">
+  <p>Reverb: <span id="engine-reverb-value">20</span>%</p>
+
+  <label for="engine-echo">Echo</label>
+  <input id="engine-echo" type="range" min="0" max="100" value="0" style="width:100%">
+  <p>Echo: <span id="engine-echo-value">0</span>%</p>
+
+  <label for="engine-volume">Output volume</label>
+  <input id="engine-volume" type="range" min="0" max="100" value="80" style="width:100%">
+  <p>Volume: <span id="engine-volume-value">80</span>%</p>
+
+  <button id="engine-enable" type="button"
+    style="padding:12px;background:#8b5cf6;color:white;border:0;border-radius:8px;margin:8px 4px 8px 0">
+    Enable Processing
+  </button>
+  <button id="engine-reset" type="button"
+    style="padding:12px;background:#333;color:white;border:0;border-radius:8px">
+    Reset Effects
+  </button>
+  <p id="engine-status" role="status">Choose an audio file to begin.</p>
+  <small>Processing applies during playback. This module does not replace your existing Auto-Tune.</small>
+</section>
+
+<script>
+(() => {
+  const $ = id => document.getElementById("engine-" + id);
+  const file = $("file");
+  const audio = $("audio");
+  const status = $("status");
+  const enable = $("enable");
+  const reset = $("reset");
+
+  // Avoid initializing twice if this script is accidentally included twice.
+  if (enable.dataset.ready) return;
+  enable.dataset.ready = "yes";
+
+  let ctx, source, eq, compressor, dry, wet, master;
+  let convolver, delay, feedback, echoGain, reverbGain;
+  let impulseURL;
+  let enabled = false;
+
+  function makeImpulse(context) {
+    const length = Math.floor(context.sampleRate * 1.8);
+    const buffer = context.createBuffer(2, length, context.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = buffer.getChannelData(ch);
+      for (let i = 0; i < length; i++) {
+        data[i] = (Math.random() * 2 - 1) *
+          Math.pow(1 - i / length, 2.5);
+      }
+    }
+    return buffer;
+  }
+
+  function setup() {
+    if (ctx) return;
+
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    source = ctx.createMediaElementSource(audio);
+
+    eq = ctx.createBiquadFilter();
+    eq.type = "peaking";
+    eq.frequency.value = 1500;
+    eq.Q.value = 0.8;
+
+    compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = -24;
+    compressor.knee.value = 20;
+    compressor.ratio.value = 4;
+    compressor.attack.value = 0.01;
+    compressor.release.value = 0.2;
+
+    dry = ctx.createGain();
+    wet = ctx.createGain();
+    master = ctx.createGain();
+
+    convolver = ctx.createConvolver();
+    convolver.buffer = makeImpulse(ctx);
+    reverbGain = ctx.createGain();
+
+    delay = ctx.createDelay(1.0);
+    delay.delayTime.value = 0.28;
+    feedback = ctx.createGain();
+    echoGain = ctx.createGain();
+    feedback.gain.value = 0.25;
+
+    // Dry vocal and compressed signal
+    source.connect(eq);
+    eq.connect(compressor);
+    compressor.connect(dry);
+    dry.connect(master);
+
+    // Reverb send
+    compressor.connect(convolver);
+    convolver.connect(reverbGain);
+    reverbGain.connect(master);
+
+    // Echo send
+    compressor.connect(delay);
+    delay.connect(echoGain);
+    delay.connect(feedback);
+    feedback.connect(delay);
+    echoGain.connect(master);
+
+    master.connect(ctx.destination);
+    apply();
+  }
+
+  function value(name) {
+    return Number($(name).value);
+  }
+
+  function apply() {
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    eq.gain.setTargetAtTime(value("eq"), now, 0.02);
+    dry.gain.setTargetAtTime(1, now, 0.02);
+    compressor.threshold.setTargetAtTime(-12 - value("comp") * 0.24, now, 0.02);
+    reverbGain.gain.setTargetAtTime(value("reverb") / 100 * 0.6, now, 0.02);
+    echoGain.gain.setTargetAtTime(value("echo") / 100 * 0.6, now, 0.02);
+    feedback.gain.setTargetAtTime(Math.min(0.65, value("echo") / 100 * 0.65), now, 0.02);
+    master.gain.setTargetAtTime(value("volume") / 100, now, 0.02);
+  }
+
+  ["eq", "comp", "reverb", "echo", "volume"].forEach(name => {
+    $(name).addEventListener("input", () => {
+      $(name + "-value").textContent = value(name);
+      if (enabled) apply();
+    });
+  });
+
+  file.addEventListener("change", () => {
+    const selected = file.files && file.files[0];
+    if (!selected) return;
+    if (audio.dataset.objectUrl) URL.revokeObjectURL(audio.dataset.objectUrl);
+    const url = URL.createObjectURL(selected);
+    audio.dataset.objectUrl = url;
+    audio.src = url;
+    audio.load();
+    status.textContent = "Recording loaded. Tap Enable Processing, then Play.";
+  });
+
+  enable.addEventListener("click", async () => {
+    try {
+      if (!audio.src) {
+        status.textContent = "Choose a vocal recording first.";
+        return;
+      }
+      setup();
+      await ctx.resume();
+      enabled = true;
+      apply();
+      status.textContent = "Processing enabled. Play your recording to hear the effects.";
+    } catch (err) {
+      status.textContent = "Audio setup failed. Reload the page and try again.";
+      console.error(err);
+    }
+  });
+
+  reset.addEventListener("click", () => {
+    $("eq").value = 0;
+    $("comp").value = 40;
+    $("reverb").value = 20;
+    $("echo").value = 0;
+    $("volume").value = 80;
+    ["eq", "comp", "reverb", "echo", "volume"].forEach(name => {
+      $(name + "-value").textContent = value(name);
+    });
+    if (enabled) apply();
+    status.textContent = "Effects reset to default values.";
+  });
+})();
+</script>
+</body>
 </html>
