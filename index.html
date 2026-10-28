@@ -541,5 +541,68 @@
       }
     });
   </script>
+
+<section id="audio-tool" style="background:#18182b;color:white;padding:20px;border-radius:16px;margin:20px 0;font-family:Arial,sans-serif">
+  <h2>🎙️ WakaûndūVibez Audio Tool</h2>
+  <p>Record your vocals and play them back.</p>
+  <button id="startAudio">🔴 Start Recording</button>
+  <button id="stopAudio" disabled>⏹ Stop Recording</button>
+  <button id="playAudio" disabled>▶ Play Recording</button>
+  <p id="audioStatus">Ready to record.</p>
+  <audio id="audioPlayback" controls style="width:100%"></audio>
+</section>
+
+<script>
+(() => {
+  const start = document.getElementById('startAudio');
+  const stop = document.getElementById('stopAudio');
+  const play = document.getElementById('playAudio');
+  const status = document.getElementById('audioStatus');
+  const audio = document.getElementById('audioPlayback');
+  let recorder;
+  let chunks = [];
+  let recordingUrl;
+
+  start.onclick = async () => {
+    try {
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+        status.textContent = 'Recording is not supported in this browser.';
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      chunks = [];
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = e => {
+        if (e.data.size) chunks.push(e.data);
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, {type: recorder.mimeType || 'audio/webm'});
+        if (recordingUrl) URL.revokeObjectURL(recordingUrl);
+        recordingUrl = URL.createObjectURL(blob);
+        audio.src = recordingUrl;
+        play.disabled = false;
+        status.textContent = 'Recording saved temporarily. Tap Play Recording.';
+        stream.getTracks().forEach(track => track.stop());
+      };
+      recorder.start();
+      start.disabled = true;
+      stop.disabled = false;
+      status.textContent = 'Recording your vocals…';
+    } catch (error) {
+      status.textContent = 'Microphone access failed. Allow microphone permission and try again.';
+    }
+  };
+
+  stop.onclick = () => {
+    if (recorder && recorder.state === 'recording') {
+      recorder.stop();
+      start.disabled = false;
+      stop.disabled = true;
+    }
+  };
+
+  play.onclick = () => audio.play();
+})();
+</script>
 </body>
 </html>
