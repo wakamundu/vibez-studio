@@ -943,5 +943,36 @@
 })();
 </script>
 <!-- End WakaûndūVibez Pitch Plugin -->
-/body>
+
+<script>
+async function startMicTest() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true
+    });
+
+    let audio = document.getElementById("micTestAudio");
+
+    if (!audio) {
+      audio = document.createElement("audio");
+      audio.id = "micTestAudio";
+      audio.controls = true;
+      audio.style.display = "block";
+      audio.style.margin = "12px auto";
+      document.body.appendChild(audio);
+    }
+
+    audio.srcObject = stream;
+
+    alert("Microphone connected! Speak to test it.");
+  } catch (error) {
+    alert("Microphone unavailable: " + error.message);
+  }
+}
+</script>
+
+<button onclick="startMicTest()">
+  Test Microphone
+</button>
+</body>
 </html>
