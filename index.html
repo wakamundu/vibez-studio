@@ -866,7 +866,82 @@
   })();
   </script>
 </section>
-</body>
-</html>
+<
+<!-- WakaûndūVibez Studio: Pitch Correction Plugin -->
+<section id="wv-pitch-plugin" style="
+  background:#17172b;color:#fff;padding:20px;
+  margin:20px 0;border-radius:16px;font-family:Arial,sans-serif;
+">
+  <h2>🎤 Auto-Tune / Pitch Correction</h2>
+  <p>Choose a musical key and adjust vocal correction.</p>
+
+  <label for="wv-key">Musical key</label>
+  <select id="wv-key" style="display:block;width:100%;padding:10px;margin:8px 0 16px">
+    <option value="0">C</option><option value="1">C# / Db</option>
+    <option value="2">D</option><option value="3">D# / Eb</option>
+    <option value="4">E</option><option value="5">F</option>
+    <option value="6">F# / Gb</option><option value="7">G</option>
+    <option value="8">G# / Ab</option><option value="9">A</option>
+    <option value="10">A# / Bb</option><option value="11">B</option>
+  </select>
+
+  <label for="wv-scale">Scale</label>
+  <select id="wv-scale" style="display:block;width:100%;padding:10px;margin:8px 0 16px">
+    <option value="major">Major</option>
+    <option value="minor">Natural minor</option>
+    <option value="chromatic">Chromatic</option>
+  </select>
+
+  <label for="wv-strength">Correction strength: <span id="wv-strength-value">70%</span></label>
+  <input id="wv-strength" type="range" min="0" max="100" value="70"
+    style="width:100%;margin:12px 0"/>
+
+  <label for="wv-retune">Retune speed: <span id="wv-retune-value">50%</span></label>
+  <input id="wv-retune" type="range" min="0" max="100" value="50"
+    style="width:100%;margin:12px 0"/>
+
+  <p id="wv-pitch-status" role="status">Choose a vocal recording to begin.</p>
+  <p style="font-size:13px;color:#c8c8df">
+    Note: this panel provides tuning controls only. Full real-time pitch
+    detection and correction require an audio-processing engine.
+  </p>
+</section>
+
+<script>
+(() => {
+  const key = document.getElementById("wv-key");
+  const scale = document.getElementById("wv-scale");
+  const strength = document.getElementById("wv-strength");
+  const retune = document.getElementById("wv-retune");
+  const status = document.getElementById("wv-pitch-status");
+
+  if (!key || !scale || !strength || !retune || !status) return;
+
+  strength.addEventListener("input", () => {
+    document.getElementById("wv-strength-value").textContent =
+      strength.value + "%";
+  });
+
+  retune.addEventListener("input", () => {
+    document.getElementById("wv-retune-value").textContent =
+      retune.value + "%";
+  });
+
+  function updateStatus() {
+    const scaleName = scale.options[scale.selectedIndex].text;
+    status.textContent =
+      "Selected: " + key.options[key.selectedIndex].text + " " +
+      scaleName + ". Strength: " + strength.value +
+      "%. Retune speed: " + retune.value +
+      "%. Connect a pitch-correction engine to process audio.";
+  }
+
+  [key, scale, strength, retune].forEach(control => {
+    control.addEventListener("input", updateStatus);
+    control.addEventListener("change", updateStatus);
+  });
+})();
+</script>
+<!-- End WakaûndūVibez Pitch Plugin -->
 /body>
 </html>
