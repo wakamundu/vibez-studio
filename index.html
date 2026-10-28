@@ -3,94 +3,543 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101020">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090711">
+  <meta name="description" content="WakaûndūVibez Studio — record your vocals, play beats and create your sound.">
   <title>WakaûndūVibez Studio</title>
-  <meta name="description" content="Create your vibe. Build your sound. Welcome to WakaûndūVibez Studio.">
+
   <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --bg: #090711;
+      --panel: #151023;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --text: #f8f5ff;
+      --muted: #b8aecb;
+    }
+
+    html { scroll-behavior: smooth; }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #101020;
-      color: white;
-      text-align: center;
+      background:
+        radial-gradient(ellipse at top, #291448 0%, var(--bg) 58%);
+      color: var(--text);
+      font-family: system-ui, Arial, sans-serif;
     }
+
     header {
-      padding: 22px 15px;
-      background: #19152d;
-      border-bottom: 1px solid #7040a0;
+      padding: 22px 16px;
+      border-bottom: 1px solid #38214f;
+      text-align: center;
+      background: #0b0813dd;
     }
-    h1 { color: #d8a5ff; font-size: 29px; }
+
+    .brand {
+      margin: 0;
+      font-size: clamp(23px, 6vw, 34px);
+      color: #e5c5ff;
+      letter-spacing: -1px;
+      text-shadow: 0 0 20px #a855f766;
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 3px;
+      margin: 9px 0 15px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 22px;
+    }
+
     nav a {
       color: white;
-      margin: 8px;
       text-decoration: none;
+      font-size: 14px;
     }
-    main { padding: 45px 18px; }
-    .studio {
-      max-width: 650px;
+
+    nav a:hover { color: #d8a5ff; }
+
+    main {
+      width: min(900px, 100%);
+      padding: 28px 16px 45px;
       margin: auto;
-      padding: 30px 18px;
-      background: linear-gradient(145deg, #292044, #15152b);
-      border: 1px solid #7040a0;
-      border-radius: 20px;
     }
-    .note { font-size: 55px; }
-    h2 { color: #d8a5ff; }
-    p { line-height: 1.7; color: #e2ddec; }
+
+    .hero {
+      text-align: center;
+      padding: 28px 10px 35px;
+    }
+
+    .eyebrow {
+      color: #d8a5ff;
+      font-size: 12px;
+      letter-spacing: 3px;
+      font-weight: 800;
+    }
+
+    h2 {
+      font-size: clamp(25px, 6vw, 40px);
+      line-height: 1.15;
+      margin: 15px 0;
+    }
+
+    .gradient {
+      background: linear-gradient(90deg, #d8a5ff, #f472b6);
+      color: transparent;
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+
+    p {
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .hero p {
+      max-width: 550px;
+      margin: 0 auto 23px;
+    }
+
     .button {
-      display: inline-block;
-      margin: 10px;
-      padding: 14px 22px;
-      border-radius: 30px;
-      background: #a34ee8;
+      border: 0;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 19px;
+      margin: 5px;
+      border-radius: 13px;
+      background: linear-gradient(110deg, #9333ea, #db2777);
       color: white;
+      font-size: 14px;
+      font-weight: 750;
       text-decoration: none;
-      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 5px 22px #a855f72b;
     }
-    footer {
-      padding: 22px;
-      color: #bcb4ca;
+
+    .button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .button.secondary {
+      background: #241832;
+      border: 1px solid #69418a;
+      box-shadow: none;
+    }
+
+    .panel {
+      padding: 23px 18px;
+      margin: 17px 0;
+      border: 1px solid #39234f;
+      border-radius: 22px;
+      background: linear-gradient(145deg, #191128ee, #100d1bee);
+      box-shadow: 0 15px 45px #0003;
+    }
+
+    .panel h3 {
+      margin: 0 0 7px;
+      font-size: 21px;
+    }
+
+    .section-label {
+      color: #d8a5ff;
+      font-size: 11px;
+      letter-spacing: 2px;
+      font-weight: bold;
+      margin-bottom: 9px;
+    }
+
+    .visualizer {
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin: 20px 0;
+      padding: 12px;
+      overflow: hidden;
+      border-radius: 15px;
+      background: #0a0811;
+      border: 1px solid #2b1b3d;
+    }
+
+    .bar {
+      width: 5px;
+      height: 12px;
+      border-radius: 8px;
+      background: linear-gradient(to top, #9333ea, #f472b6);
+      opacity: .8;
+    }
+
+    .visualizer.active .bar {
+      animation: pulse .55s ease-in-out infinite alternate;
+      animation-delay: calc(var(--i) * -0.06s);
+    }
+
+    @keyframes pulse {
+      from { height: 8px; }
+      to { height: calc(12px + (var(--i) % 7) * 9px); }
+    }
+
+    .status {
+      padding: 11px;
+      border-radius: 10px;
+      background: #0c0914;
+      color: #d8a5ff;
       font-size: 13px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin: 15px 0;
+    }
+
+    .field {
+      display: block;
+      margin: 17px 0 8px;
+      color: #ded3ef;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      color: var(--muted);
+      border: 1px dashed #69418a;
+      border-radius: 12px;
+      background: #0b0813;
+    }
+
+    audio {
+      display: block;
+      width: 100%;
+      margin: 15px 0;
+      height: 45px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #998ba9;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .feature {
+      padding: 17px 12px;
+      background: #110d1c;
+      border: 1px solid #30203f;
+      border-radius: 15px;
+    }
+
+    .feature span {
+      display: block;
+      font-size: 25px;
+      margin-bottom: 8px;
+    }
+
+    .feature strong { font-size: 14px; }
+
+    .feature p {
+      margin-bottom: 0;
+      font-size: 12px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 15px;
+      color: #9285a3;
+      font-size: 12px;
+      border-top: 1px solid #281936;
+    }
+
+    @media (min-width: 650px) {
+      .studio-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      .panel { margin: 0 0 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        scroll-behavior: auto !important;
+      }
     }
   </style>
 </head>
+
 <body>
   <header>
-    <h1>WakaûndūVibez Studio</h1>
+    <h1 class="brand">WakaûndūVibez Studio</h1>
+    <div class="tagline">CREATE YOUR VIBE. BUILD YOUR SOUND.</div>
     <nav>
       <a href="#home">Home</a>
+      <a href="#studio">Studio</a>
+      <a href="#beats">Beats</a>
       <a href="#about">About</a>
-      <a href="#contact">Contact</a>
     </nav>
   </header>
 
-  <main id="home">
-    <section class="studio">
-      <div class="note">🎧 🎵 🎙️</div>
-      <h2>Create Your Vibe. Build Your Sound.</h2>
-      <p>
-        Welcome to WakaûndūVibez Studio — your music journey
-        starts here. Record your vocals, explore your creativity,
-        and bring your sound to life.
-      </p>
-      <a class="button" href="#about">Explore Our Studio</a>
+  <main>
+    <section class="hero" id="home">
+      <div class="eyebrow">YOUR SOUND. YOUR STORY.</div>
+      <h2>Welcome to your<br><span class="gradient">personal music studio.</span></h2>
+      <p>Record your vocals, listen to your takes and bring your musical ideas to life — right from your phone.</p>
+      <a class="button" href="#studio">🎙️ Open Recording Studio</a>
     </section>
 
-    <section id="about">
-      <h2>About Our Studio</h2>
-      <p>A home for original music, fresh vibes, and creative talent.</p>
-    </section>
+    <div class="studio-grid">
+      <section class="panel" id="studio">
+        <div class="section-label">01 / VOCAL BOOTH</div>
+        <h3>Record Your Vocals</h3>
+        <p>Connect your headphones, allow microphone access and capture your performance.</p>
 
-    <section id="contact">
-      <h2>Contact</h2>
-      <p>Stay tuned for updates from WakaûndūVibez Studio.</p>
+        <div class="visualizer" id="visualizer" aria-label="Decorative audio waveform"></div>
+
+        <div class="status" id="recordStatus" role="status" aria-live="polite">
+          Ready to record
+        </div>
+
+        <div class="controls">
+          <button class="button" id="recordBtn">● Start Recording</button>
+          <button class="button secondary" id="stopBtn" disabled>■ Stop</button>
+        </div>
+
+        <label class="field" for="vocalAudio">Your recorded vocals</label>
+        <audio id="vocalAudio" controls hidden></audio>
+
+        <a id="downloadBtn" class="button secondary" hidden download="wakaundu-vocals.webm">
+          ↓ Download Recording
+        </a>
+
+        <p class="small">Recording stays on this page unless you download or share it. Keep the page open while recording.</p>
+      </section>
+
+      <section class="panel" id="beats">
+        <div class="section-label">02 / BEAT PLAYER</div>
+        <h3>Bring Your Beat</h3>
+        <p>Choose an audio beat saved on your phone and play it while preparing your vocals.</p>
+
+        <label class="field" for="beatFile">Choose an audio file</label>
+        <input id="beatFile" type="file" accept="audio/*">
+
+        <audio id="beatAudio" controls hidden></audio>
+
+        <div class="status" id="beatStatus" role="status" aria-live="polite">
+          No beat selected yet
+        </div>
+
+        <p class="small">Use MP3, WAV or another audio format supported by your browser.</p>
+      </section>
+    </div>
+
+    <section class="panel" id="about">
+      <div class="section-label">03 / YOUR CREATIVE SPACE</div>
+      <h3>More than a vibe.</h3>
+      <p>WakaûndūVibez Studio is built for original music, fresh Gengetone energy and independent artists.</p>
+
+      <div class="feature-grid">
+        <div class="feature">
+          <span>🎙️</span>
+          <strong>Vocal Recording</strong>
+          <p>Capture and replay your takes.</p>
+        </div>
+        <div class="feature">
+          <span>🎧</span>
+          <strong>Beat Playback</strong>
+          <p>Listen to audio files from your phone.</p>
+        </div>
+        <div class="feature">
+          <span>〰️</span>
+          <strong>Studio Visuals</strong>
+          <p>Animated waveform-style display.</p>
+        </div>
+        <div class="feature">
+          <span>🎚️</span>
+          <strong>Next: Mixing</strong>
+          <p>Build toward a fuller music workstation.</p>
+        </div>
+      </div>
     </section>
   </main>
 
   <footer>
-    © 2026 WakaûndūVibez Studio. All rights reserved.
+    © <span id="year"></span> WakaûndūVibez Studio<br>
+    Create your vibe. Build your sound.
   </footer>
+
+  <script>
+    const recordBtn = document.getElementById("recordBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const recordStatus = document.getElementById("recordStatus");
+    const vocalAudio = document.getElementById("vocalAudio");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const visualizer = document.getElementById("visualizer");
+    const beatFile = document.getElementById("beatFile");
+    const beatAudio = document.getElementById("beatAudio");
+    const beatStatus = document.getElementById("beatStatus");
+
+    let recorder = null;
+    let micStream = null;
+    let chunks = [];
+    let recordingUrl = null;
+    let beatUrl = null;
+
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+
+    // Decorative waveform bars
+    for (let i = 0; i < 35; i++) {
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      bar.style.setProperty("--i", i);
+      visualizer.appendChild(bar);
+    }
+
+    function setStatus(message) {
+      recordStatus.textContent = message;
+    }
+
+    recordBtn.addEventListener("click", async () => {
+      if (!navigator.mediaDevices ||
+          !navigator.mediaDevices.getUserMedia ||
+          !window.MediaRecorder) {
+        setStatus("Recording is not supported here. Open your published HTTPS website in a supported browser.");
+        return;
+      }
+
+      recordBtn.disabled = true;
+      setStatus("Requesting microphone permission...");
+
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+
+        let options = {};
+        if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+          options.mimeType = "audio/webm;codecs=opus";
+        } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+          options.mimeType = "audio/mp4";
+        }
+
+        recorder = new MediaRecorder(micStream, options);
+        chunks = [];
+
+        recorder.addEventListener("dataavailable", event => {
+          if (event.data && event.data.size > 0) {
+            chunks.push(event.data);
+          }
+        });
+
+        recorder.addEventListener("stop", () => {
+          const mime = recorder.mimeType || "audio/webm";
+          const blob = new Blob(chunks, { type: mime });
+
+          if (recordingUrl) URL.revokeObjectURL(recordingUrl);
+          recordingUrl = URL.createObjectURL(blob);
+
+          vocalAudio.src = recordingUrl;
+          vocalAudio.hidden = false;
+
+          const extension = mime.includes("mp4") ? "m4a" : "webm";
+          downloadBtn.href = recordingUrl;
+          downloadBtn.download = "wakaundu-vocals." + extension;
+          downloadBtn.hidden = false;
+
+          if (micStream) {
+            micStream.getTracks().forEach(track => track.stop());
+            micStream = null;
+          }
+
+          visualizer.classList.remove("active");
+          setStatus("Recording saved in this page. Play it back or download it.");
+          recordBtn.disabled = false;
+          stopBtn.disabled = true;
+        });
+
+        recorder.addEventListener("error", () => {
+          setStatus("Recording error. Please try again.");
+          recordBtn.disabled = false;
+          stopBtn.disabled = true;
+          visualizer.classList.remove("active");
+          if (micStream) {
+            micStream.getTracks().forEach(track => track.stop());
+            micStream = null;
+          }
+        });
+
+        recorder.start();
+        recordBtn.disabled = true;
+        stopBtn.disabled = false;
+        visualizer.classList.add("active");
+        setStatus("🔴 Recording... perform your vocals!");
+
+      } catch (error) {
+        if (micStream) {
+          micStream.getTracks().forEach(track => track.stop());
+          micStream = null;
+        }
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+
+        if (error.name === "NotAllowedError" ||
+            error.name === "PermissionDeniedError") {
+          setStatus("Microphone permission denied. Allow microphone access in your browser settings.");
+        } else {
+          setStatus("Could not start recording. Check your microphone and try again.");
+        }
+      }
+    });
+
+    stopBtn.addEventListener("click", () => {
+      if (recorder && recorder.state !== "inactive") {
+        stopBtn.disabled = true;
+        setStatus("Finishing your recording...");
+        recorder.stop();
+      }
+    });
+
+    beatFile.addEventListener("change", () => {
+      const file = beatFile.files && beatFile.files[0];
+      if (!file) return;
+
+      if (beatUrl) URL.revokeObjectURL(beatUrl);
+      beatUrl = URL.createObjectURL(file);
+      beatAudio.src = beatUrl;
+      beatAudio.hidden = false;
+      beatStatus.textContent = "Beat ready: " + file.name;
+    });
+
+    window.addEventListener("pagehide", () => {
+      if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+      }
+    });
+  </script>
 </body>
 </html>
