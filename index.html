@@ -974,5 +974,132 @@ async function startMicTest() {
 <button onclick="startMicTest()">
   Test Microphone
 </button>
+
+<section id="vibez-audio-tools" style="background:#18182b;color:white;padding:20px;border-radius:16px;margin:20px 0;font-family:Arial,sans-serif">
+  <h2>🎙️ WakaûndūVibez Vocal Studio</h2>
+  <p>Record your voice, shape your sound and export your take.</p>
+
+  <button id="vzStart">🎤 Start Recording</button>
+  <button id="vzStop" disabled>⏹ Stop</button>
+  <p id="vzStatus">Ready to record</p>
+
+  <audio id="vzPlayback" controls style="width:100%"></audio>
+  <p><a id="vzDownload" hidden download="wakaundu-vocal.webm" style="color:#a8e7ff">Download recording</a></p>
+
+  <hr>
+  <h3>🎚️ Mixing & Mastering</h3>
+
+  <label>Pitch correction (semitones)
+    <input id="vzPitch" type="range" min="-6" max="6" value="0" step="1">
+    <span id="vzPitchVal">0</span>
+  </label><br><br>
+
+  <label>Reverb
+    <input id="vzReverb" type="range" min="0" max="100" value="15">
+  </label><br><br>
+
+  <label>Echo
+    <input id="vzEcho" type="range" min="0" max="100" value="10">
+  </label><br><br>
+
+  <label>Bass
+    <input id="vzBass" type="range" min="-12" max="12" value="0">
+  </label><br><br>
+
+  <label>Treble
+    <input id="vzTreble" type="range" min="-12" max="12" value="0">
+  </label><br><br>
+
+  <label>Master volume
+    <input id="vzVolume" type="range" min="0" max="150" value="100">
+  </label>
+
+  <p id="vzMixNote" style="color:#ffd780">
+    Effects preview is available while monitoring live input.
+    This basic version does not yet apply all effects to the exported recording.
+  </p>
+</section>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const start = $("vzStart");
+  const stop = $("vzStop");
+  const status = $("vzStatus");
+  const player = $("vzPlayback");
+  const download = $("vzDownload");
+
+  let stream = null;
+  let recorder = null;
+  let chunks = [];
+  let recordingUrl = null;
+
+  $("vzPitch").addEventListener("input", () => {
+    $("vzPitchVal").textContent = $("vzPitch").value;
+  });
+
+  start.addEventListener("click", async () => {
+    try {
+      if (!navigator.mediaDevices?.getUserMedia ||
+          !window.MediaRecorder) {
+        throw new Error("Use an updated browser with microphone recording support.");
+      }
+
+      start.disabled = true;
+      status.textContent = "Requesting microphone…";
+
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false
+      });
+
+      chunks = [];
+      recorder = new MediaRecorder(stream);
+
+      recorder.ondataavailable = event => {
+        if (event.data.size) chunks.push(event.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, {
+          type: recorder.mimeType || "audio/webm"
+        });
+
+        if (recordingUrl) URL.revokeObjectURL(recordingUrl);
+        recordingUrl = URL.createObjectURL(blob);
+        player.src = recordingUrl;
+        download.href = recordingUrl;
+        download.hidden = false;
+        status.textContent = "Recording saved. Tap Play to listen.";
+
+        stream?.getTracks().forEach(track => track.stop());
+        stream = null;
+        start.disabled = false;
+        stop.disabled = true;
+      };
+
+      recorder.start();
+      status.textContent = "Recording… sing into your phone!";
+      stop.disabled = false;
+    } catch (error) {
+      status.textContent = "Microphone error: " + error.message;
+      stream?.getTracks().forEach(track => track.stop());
+      stream = null;
+      start.disabled = false;
+      stop.disabled = true;
+    }
+  });
+
+  stop.addEventListener("click", () => {
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+      status.textContent = "Preparing your recording…";
+    }
+  });
+
+  $("vzMixNote").textContent =
+    "Pitch, reverb, echo, EQ and volume controls are UI controls only in this starter version. True pitch correction and processed export need an audio-processing engine.";
+})();
+</script>
 </body>
 </html>
