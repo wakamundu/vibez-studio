@@ -1401,6 +1401,40 @@ async function startMicTest() {
     status.textContent = "Effects reset to default values.";
   });
 })();
+<!-- Save & Export Vocals -->
+<div id="vibez-export-panel" style="margin:20px auto;padding:18px;background:#18182b;border:1px solid #7546ff;border-radius:14px;color:white;max-width:500px;font-family:Arial,sans-serif;">
+  <h2 style="margin-top:0;">Save & Export Vocals</h2>
+  <p>Export your available recording as an audio file.</p>
+  <button id="vibez-export-btn" type="button" style="padding:12px 18px;border:0;border-radius:8px;background:#7546ff;color:white;font-weight:bold;">
+    Export Recording
+  </button>
+  <p id="vibez-export-status" role="status" aria-live="polite"></p>
+</div>
+
+<script>
+(function () {
+  const button = document.getElementById("vibez-export-btn");
+  const status = document.getElementById("vibez-export-status");
+
+  button.addEventListener("click", function () {
+    const audio = document.querySelector("audio");
+
+    if (!audio || !audio.src) {
+      status.textContent = "No saved audio file found yet. Record or load a vocal recording first.";
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = audio.src;
+    link.download = "WakaunduVibez-vocals.webm";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    status.textContent = "Export requested. Check your Downloads folder.";
+  });
+})();
+</script>
 </script>
 </body>
 </html>
